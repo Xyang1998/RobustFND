@@ -11,7 +11,7 @@ pip3 install -r requirements.txt
 ## Train models
 You can simply run the bash script.
 ```shell script
-sh train.sh
+sh train-cl.sh
 ```
 
 
