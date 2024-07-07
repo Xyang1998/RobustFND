@@ -26,8 +26,8 @@ class BertNLIModel(nn.Module):
             self.bert = AlbertModel.from_pretrained(bert_type)
             self.tokenizer = AlbertTokenizer.from_pretrained(bert_type)
         elif 'roberta-large' in bert_type:
-            self.bert = AlbertModel.from_pretrained(bert_type)
-            self.tokenizer = AlbertTokenizer.from_pretrained(bert_type)
+            self.bert = AutoModel.from_pretrained("xlm-roberta-large")
+            self.tokenizer = AutoTokenizer.from_pretrained(bert_type)
         else:
             print('illegal bert type {}!'.format(bert_type))
             self.bert = AutoModel.from_pretrained(bert_type)

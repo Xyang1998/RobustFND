@@ -197,6 +197,7 @@ def train(model, optimizer, scheduler, train_data, dev_data, batch_size, fp16, c
 def parse_args():
     ap = argparse.ArgumentParser("arguments for bert-nli training")
     ap.add_argument('--lr',type=float,default=2e-5,help='lr')
+    ap.add_argument('-ep','--epoch_num',type=int,default=10,help='epoch num')
     ap.add_argument('--fp16',type=int,default=0,help='use apex mixed precision training (1) or not (0); do not use this together with checkpoint')
     ap.add_argument('--check_point','-cp',type=int,default=0,help='use checkpoint (1) or not (0); this is required for training bert-large or larger models; do not use this together with apex fp16')
     ap.add_argument('--gpu',type=int,default=1,help='use gpu (1) or not (0)')
@@ -211,12 +212,11 @@ def parse_args():
     ap.add_argument('--dataset', type=str, default='Snopes', help='[Snopes, Politifact]')
     ap.add_argument('--DAType', type=str, default='MyDA', help='[gpt,MyDA]')
     ap.add_argument('--cl', type=bool, default=True, help='Use cl?')
-    ap.add_argument('--epochs', default=100, help='Number of epochs to run', type=int)
     ap.add_argument('--batch_size', default=16, help='Batch size', type=int)
     ap.add_argument('--seed', default=123456, type=float, help='Learning rate')
     ap.add_argument("--bert_hidden_dim", default=768, type=int)
     ap.add_argument('--topk',default=5, type=int)
-    ap.add_argument('--warmup_percent', type=float, default=0.2,help='how many percentage of steps are used for warmup')
+    #ap.add_argument('--warmup_percent', type=float, default=0.2,help='how many percentage of steps are used for warmup')
     ap.add_argument('--dropout', type=float, default=0.6, help='Dropout.')
     ap.add_argument('--gradient_accumulation_steps',
                         type=int,
@@ -227,23 +227,20 @@ def parse_args():
                         default=0.3,
                         help="Temperature")
     args = ap.parse_args()
-    return args.batch_size, args.epoch_num, args.fp16, args.check_point, args.gpu,  args.scheduler_setting, args.max_grad_norm, args.warmup_percent, args.bert_type, args.trained_model, args.hans, args.reinit_layers, args.freeze_layers,args
+    return args.batch_size, args.epoch_num, args.fp16, args.check_point, args.gpu,  args.scheduler_setting, args.max_grad_norm, args.warmup_percent, args.bert_type, args.trained_model, args.reinit_layers, args.freeze_layers,args
 
 
 if __name__ == '__main__':
 
-    batch_size, epoch_num, fp16, checkpoint, gpu, scheduler_setting, max_grad_norm, warmup_percent, bert_type, trained_model, hans, reinit_layers, freeze_layers,args = parse_args()
+    batch_size, epoch_num, fp16, checkpoint, gpu, scheduler_setting, max_grad_norm, warmup_percent, bert_type, trained_model, reinit_layers, freeze_layers,args = parse_args()
     fp16 = bool(fp16)
     gpu = bool(gpu)
-    hans = bool(hans)
     checkpoint = bool(checkpoint)
     if trained_model=='None': trained_model=None
     devpath_ori = 'declare_%s/%s/mapped_data/dev_ori.tsv' % (args.DAType, args.dataset)
     devpath_para = 'declare_%s/%s/mapped_data/paraphrase_dev.tsv' % (args.DAType, args.dataset)
     devpath_neg = 'declare_%s/%s/mapped_data/neg_dev.tsv' % (args.DAType, args.dataset)
     evidences = load_evidences('./reoutput/%s.json' % (args.dataset), args.topk)
-    other='Snopes' if args.dataset=='PolitiFact' else 'PolitiFact'
-    evidences_other = load_evidences('./reoutput/%s.json' % (other), args.topk)
 
     dev_ori = load_ids(devpath_ori)
     dev_para = load_ids(devpath_para)
@@ -263,7 +260,6 @@ if __name__ == '__main__':
                     logging.StreamHandler()]
      logging.basicConfig(format='%(asctime)s - %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S',level=logging.DEBUG, handlers=handlers)
-     print(args.dataset)
      trainpath_ori = 'declare_%s/%s/mapped_data/5fold/train_%d.tsv' % (args.DAType, args.dataset, fold)
      trainpath_para = 'declare_%s/%s/mapped_data/5fold/paraphrase_train_%d.tsv' % (args.DAType, args.dataset, fold)
      trainpath_neg = 'declare_%s/%s/mapped_data/5fold/neg_train_%d.tsv' % (args.DAType, args.dataset, fold)
